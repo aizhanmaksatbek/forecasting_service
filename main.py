@@ -25,6 +25,12 @@ async def submit_prediction(input_data: PredictionInput):
 @app.get("/health")
 def health_check():
     if app.state.prediction_model is not None:
-        return {"status": status.HTTP_200_OK, "message": "Model is loaded and ready to use."}
+        return {
+            "status": status.HTTP_200_OK,
+            "message": "Model is loaded and ready to use."
+            }
     else:
-        return {"status": status.HTTP_404_NOT_FOUND, "message": "Model is not loaded."}
+        return {
+            "status": status.HTTP_404_NOT_FOUND,
+            "message": "Model is not loaded."
+            }
