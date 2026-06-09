@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import torch
 
 
 class PredictionInput(BaseModel):
@@ -9,3 +10,13 @@ class PredictionInput(BaseModel):
 
 class PredictionOutput(BaseModel):
     prediction: float
+
+
+class Predictor(BaseModel):
+    def predict(self, input_data: dict) -> PredictionOutput:
+        model = torch.load(
+            "checkpoint/gnn_tft_best.pt",
+            map_location=torch.device("cpu")
+        )
+        print(type(model))
+        return PredictionOutput(prediction=42.0)

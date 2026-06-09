@@ -1,21 +1,11 @@
 from fastapi import FastAPI
-from schemas import PredictionInput, PredictionOutput
-import torch
-
+from schemas import PredictionInput, PredictionOutput, Predictor
 
 app = FastAPI()
 
 
-@app.get("/model/{item_id}", response_model=dict)
-def read_results(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
-
-
 @app.post("/model", response_model=PredictionOutput)
 async def submit_prediction(input_data: PredictionInput):
-    model = torch.load(
-        "checkpoint/gnn_tft_best.pt",
-        map_location=torch.device("cpu")
-        )
-    print(type(model))
-    return PredictionOutput(prediction=42.0)
+    features = [input_data.feature1, input_data.feature2, input_data.feature3]
+    prediction = Predictor().predict(features)
+    return prediction
