@@ -2,3 +2,15 @@ fastapi[standard]
 torch
 numpy
 pandas
+mlflow
+
+# experiment packages
+statsforecast
+matplotlib
+plotly
+nbformat
+statsmodels
+mlforecast
+lightgbm
+window-ops
+xgboost
