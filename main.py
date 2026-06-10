@@ -1,5 +1,5 @@
 from fastapi import FastAPI, status
-from schemas import PredictionInput, PredictionOutput
+from schemas.schemas import PredictionInput, PredictionOutput
 from contextlib import asynccontextmanager
 from ml_model.pre_process import preprocess_input
 from ml_model.load_model import load_model

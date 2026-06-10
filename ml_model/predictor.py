@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from schemas import PredictionInput, PredictionOutput
+from schemas.schemas import PredictionInput, PredictionOutput
 import torch
 from config.settings import FUTURE_HORIZON
 

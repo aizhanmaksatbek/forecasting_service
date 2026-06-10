@@ -1,4 +1,4 @@
-from schemas import PredictionInput
+from schemas.schemas import PredictionInput
 
 
 def preprocess_input(input_data: PredictionInput):
