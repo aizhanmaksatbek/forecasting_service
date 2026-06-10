@@ -1,2 +1,7 @@
 FUTURE_HORIZON = 28
-PAST_DAYS = 56
+PAST_DAYS = 1
+
+DATA_TRAIN_FILE_PATH = "data/train.csv"
+ML_MODEL_DIR = "ml_model/checkpoints/"
+PRODUCT_NAME = "BEVERAGES"
+STORE_NUMBER = 1
