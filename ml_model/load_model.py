@@ -1,8 +1,9 @@
 import torch
+from config.settings import ML_MODEL_DIR
 
 
 async def load_model():
     return torch.load(
-            "ml_model/checkpoint/gnn_tft_best.pt",
+            f"{ML_MODEL_DIR}tft_best_train_final.pt",
             map_location=torch.device("cpu")
         )

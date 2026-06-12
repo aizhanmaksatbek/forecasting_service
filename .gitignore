@@ -144,6 +144,9 @@ rabbitmq-data/
 # ActiveMQ
 activemq-data/
 
+.DS_Store
+*.csv
+
 # Dataset files
 data/
 
