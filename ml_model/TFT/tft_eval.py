@@ -7,11 +7,10 @@ from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
 from ml_model.TFT.architecture.tft import TemporalFusionTransformer, QuantileLoss
 from ml_model.TFT.tft_dataset import TFTWindowDataset, tft_collate
-from ml_model.TFT.utils import set_seed, build_onehot_maps
+from ml_model.TFT.utils import build_onehot_maps
 from ml_model.TFT.utils import compute_metrics, get_date_splits
 from config.settings import ENC_VARS, DEC_VARS, STATIC_COLS, REALS_TO_SCALE
-from config.settings import TFT_CHECKPOINTS_DIR
-from config.settings import ML_MODEL_DIR
+from config.settings import ML_MODEL_CHECKPOINT
 
 
 def save_results_csv(rows):
@@ -20,7 +19,7 @@ def save_results_csv(rows):
             pd.DataFrame(rows)
             .sort_values(["family", "store_nbr", "date"])
         )
-        out_csv = os.path.join(ML_MODEL_DIR, "tft_test_forecasts.csv")
+        out_csv = os.path.join(ML_MODEL_CHECKPOINT, "tft_test_forecasts.csv")
         test_forecasts_df.to_csv(out_csv, index=False)
         print(f"Saved test forecasts CSV -> {out_csv}")
 
@@ -136,7 +135,6 @@ def make_forecast(input_data):
     parser.add_argument("--seed", type=int, default=42)
     args, unknown = parser.parse_known_args()
 
-    set_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Data
@@ -146,7 +144,7 @@ def make_forecast(input_data):
 
     # Load checkpoint first to read training-time config
     checkpoint_path = os.path.join(
-        f"{ML_MODEL_DIR}tft_best_train_final.pt"
+        f"{ML_MODEL_CHECKPOINT}tft_best_train_final.pt"
         )
     assert os.path.exists(checkpoint_path), f"Checkpoint not \
         found: {checkpoint_path}"
