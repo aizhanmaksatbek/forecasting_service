@@ -1,14 +1,10 @@
 from pydantic import BaseModel
 from schemas.schemas import PredictionInput, PredictionOutput
-import torch
 from config.settings import FUTURE_HORIZON
 from ml_model.TFT.tft_eval import make_forecast
 
 
 class Predictor(BaseModel):
-    def predict(
-            self,
-            input_data: PredictionInput,
-            model: torch.nn.Module) -> PredictionOutput:
-        make_forecast()
+    def predict(self, input_data: PredictionInput) -> PredictionOutput:
+        make_forecast(input_data)
         return PredictionOutput(prediction=[23.5]*FUTURE_HORIZON)

@@ -1,15 +1,6 @@
-import random
 import numpy as np
-import torch
 import pandas as pd
 from typing import Dict, List
-
-
-def set_seed(seed: int = 42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
 
 
 def build_onehot_maps(df: pd.DataFrame, cols: List[str]) -> Dict[str, Dict]:

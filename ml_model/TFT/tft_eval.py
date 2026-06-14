@@ -119,7 +119,7 @@ def eval_loader(model, data_loader, quantiles, test_len):
     return compute_metrics(test_ys, test_preds)
 
 
-def make_forecast():
+def make_forecast(input_data):
     parser = argparse.ArgumentParser()
     parser.add_argument("--enc-len", type=int, default=56)
     parser.add_argument("--dec-len", type=int, default=28)

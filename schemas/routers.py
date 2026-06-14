@@ -26,7 +26,5 @@ async def submit_prediction(
     request: Request,
     input_data: Annotated[PredictionInput, Depends(get_input_data)],
 ):
-    prediction = Predictor().predict(
-        input_data, request.app.state.prediction_model
-        )
+    prediction = Predictor().predict(input_data)
     return prediction
