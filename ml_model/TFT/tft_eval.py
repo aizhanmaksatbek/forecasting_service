@@ -119,7 +119,7 @@ def eval_loader(model, data_loader, quantiles, test_len):
     return compute_metrics(test_ys, test_preds)
 
 
-def main():
+def make_forecast():
     parser = argparse.ArgumentParser()
     parser.add_argument("--enc-len", type=int, default=56)
     parser.add_argument("--dec-len", type=int, default=28)
@@ -198,7 +198,3 @@ def main():
     # Evaluate
     test_metrics = eval_loader(model, test_loader, quantiles, test_len)
     print(f"Test matrics: {test_metrics}")
-
-
-# if __name__ == "__main__":
-#     main()

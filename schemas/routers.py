@@ -1,7 +1,8 @@
 from schemas.schemas import PredictionInput, PredictionOutput
-from fastapi import APIRouter, Request, status
-from ml_model.data_prep import preprocess_input
+from fastapi import APIRouter, Request, status, Depends
+from ml_model.data_prep import get_input_data
 from ml_model.predictor import Predictor
+from typing import Annotated
 
 router = APIRouter()
 
@@ -23,9 +24,8 @@ def health_check(request: Request):
 @router.post("/model", response_model=PredictionOutput)
 async def submit_prediction(
     request: Request,
-    input_data: PredictionInput,
+    input_data: Annotated[PredictionInput, Depends(get_input_data)],
 ):
-    input_data = preprocess_input(input_data)
     prediction = Predictor().predict(
         input_data, request.app.state.prediction_model
         )

@@ -1,8 +1,8 @@
 FUTURE_HORIZON = 28
 PAST_DAYS = 1
 
-DATA_TRAIN_FILE_PATH = "data/train.csv"
-ML_MODEL_DIR = "ml_model/checkpoints/"
+DATA_FILE_PATH = "data/panel.csv"
+ML_MODEL_DIR = "checkpoints/"
 PRODUCT_NAME = "BEVERAGES"
 STORE_NUMBER = 1
 

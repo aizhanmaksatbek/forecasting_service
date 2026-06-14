@@ -3,9 +3,22 @@ from config.settings import FUTURE_HORIZON, PAST_DAYS
 
 
 class ProductFeatures(BaseModel):
-    feature1: float
-    feature2: float
-    feature3: float
+    store_nbr: int
+    family: str
+    date: str
+    dow: int
+    month: int
+    weekofyear: int
+    id: int
+    sales: float
+    onpromotion: float
+    state: str
+    store_type: str
+    cluster: int
+    transactions: float
+    dcoilwtico: float
+    is_holiday: int
+    is_workday: int
 
 
 class PredictionInput(BaseModel):
