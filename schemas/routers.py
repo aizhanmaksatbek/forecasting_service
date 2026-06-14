@@ -23,7 +23,6 @@ def health_check(request: Request):
 
 @router.post("/model", response_model=PredictionOutput)
 async def submit_prediction(
-    request: Request,
     input_data: Annotated[PredictionInput, Depends(get_input_data)],
 ):
     prediction = Predictor().predict(input_data)

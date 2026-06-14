@@ -1,8 +1,8 @@
 from pydantic import BaseModel, field_validator
-from config.settings import FUTURE_HORIZON, PAST_DAYS
+from config.settings import FUTURE_HORIZON
 
 
-class ProductFeatures(BaseModel):
+class PurchaseRecord(BaseModel):
     store_nbr: int
     family: str
     date: str
@@ -21,16 +21,14 @@ class ProductFeatures(BaseModel):
     is_workday: int
 
 
-class PredictionInput(BaseModel):
-    past_demand: list[ProductFeatures]
+class PurchaseHistory(BaseModel):
+    past_demand: list[PurchaseRecord]
 
-    @field_validator("past_demand")
-    def check_past_days_count(cls, past_demand):
-        if len(past_demand) != PAST_DAYS:
-            raise ValueError(
-                f"Past demand must contain {PAST_DAYS} days of history."
-                )
-        return past_demand
+    def __init__(self):
+        self.past_demand = list()
+
+    def register_record(self, record: PurchaseRecord):
+        self.past_demand.append(PurchaseRecord(record))
 
 
 class PredictionOutput(BaseModel):

@@ -1,9 +1,14 @@
-from schemas.schemas import PredictionInput
+from schemas.schemas import PurchaseRecord, PurchaseHistory
 import pandas as pd
-from config.settings import DATA_FILE_PATH, PRODUCT_NAME, STORE_NUMBER
+from config.settings import DATA_FILE_PATH
 
 
-async def get_input_data() -> PredictionInput:
-    ds = pd.read_csv(DATA_FILE_PATH)
-    # ds = ds[(ds["family"] == PRODUCT_NAME) & (ds["store_nbr"] == STORE_NUMBER)]
-    return ds
+async def get_input_data():
+    """
+    This function loads the prediction dataset
+    """
+    purchase_history = PurchaseHistory()
+    df = pd.read_csv(DATA_FILE_PATH)
+    for _, row in df.iterrows():
+        purchase_history.register_record(PurchaseRecord(row))
+    return PurchaseHistory(purchase_history)
