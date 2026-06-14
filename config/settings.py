@@ -3,6 +3,7 @@ PAST_DAYS = 1
 
 DATA_FILE_PATH = "data/panel.csv"
 ML_MODEL_CHECKPOINT = "checkpoints/tft_best_train_final.pt"
+PREDICTION_RESULTS_DIR = "checkpoints/"
 
 ENC_VARS = [
     "sales",

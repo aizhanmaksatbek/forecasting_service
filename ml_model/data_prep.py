@@ -7,8 +7,10 @@ async def get_input_data():
     """
     This function loads the prediction dataset
     """
-    purchase_history = PurchaseHistory()
     df = pd.read_csv(DATA_FILE_PATH)
+    purchase_history = PurchaseHistory()
+
     for _, row in df.iterrows():
-        purchase_history.register_record(PurchaseRecord(row))
-    return PurchaseHistory(purchase_history)
+        record = PurchaseRecord.model_validate(row.to_dict())
+        purchase_history.register_record(record)
+    return purchase_history

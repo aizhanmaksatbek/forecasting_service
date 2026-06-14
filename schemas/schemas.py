@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from config.settings import FUTURE_HORIZON
 
 
@@ -9,7 +9,6 @@ class PurchaseRecord(BaseModel):
     dow: int
     month: int
     weekofyear: int
-    id: int
     sales: float
     onpromotion: float
     state: str
@@ -22,13 +21,10 @@ class PurchaseRecord(BaseModel):
 
 
 class PurchaseHistory(BaseModel):
-    past_demand: list[PurchaseRecord]
-
-    def __init__(self):
-        self.past_demand = list()
+    past_demand: list[PurchaseRecord] = Field(default_factory=list)
 
     def register_record(self, record: PurchaseRecord):
-        self.past_demand.append(PurchaseRecord(record))
+        self.past_demand.append(record)
 
 
 class PredictionOutput(BaseModel):

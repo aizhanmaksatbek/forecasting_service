@@ -1,4 +1,3 @@
-import argparse
 import os
 import numpy as np
 import pandas as pd
@@ -9,8 +8,14 @@ from ml_model.TFT.architecture.tft import TemporalFusionTransformer, QuantileLos
 from ml_model.TFT.tft_dataset import TFTWindowDataset, tft_collate
 from ml_model.TFT.utils import build_onehot_maps
 from ml_model.TFT.utils import compute_metrics, get_date_splits
-from config.settings import ENC_VARS, DEC_VARS, STATIC_COLS, REALS_TO_SCALE
-from config.settings import ML_MODEL_CHECKPOINT
+from config.settings import (
+    ENC_VARS,
+    DEC_VARS,
+    STATIC_COLS,
+    REALS_TO_SCALE,
+    PREDICTION_RESULTS_DIR,
+    ML_MODEL_CHECKPOINT
+    )
 
 
 def save_results_csv(rows):
@@ -19,7 +24,7 @@ def save_results_csv(rows):
             pd.DataFrame(rows)
             .sort_values(["family", "store_nbr", "date"])
         )
-        out_csv = os.path.join(ML_MODEL_CHECKPOINT, "tft_test_forecasts.csv")
+        out_csv = os.path.join(PREDICTION_RESULTS_DIR, "forecast_results.csv")
         test_forecasts_df.to_csv(out_csv, index=False)
         print(f"Saved test forecasts CSV -> {out_csv}")
 
@@ -119,79 +124,41 @@ def eval_loader(model, data_loader, quantiles, test_len):
 
 
 def make_forecast(input_data):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--enc-len", type=int, default=56)
-    parser.add_argument("--dec-len", type=int, default=28)
-    parser.add_argument("--batch-size", type=int, default=256)
-    # CLI defaults only used if checkpoint doesn't contain cfg
-    parser.add_argument("--hidden-dim", type=int, default=128)
-    parser.add_argument("--d-model", type=int, default=64)
-    parser.add_argument("--heads", type=int, default=4)
-    parser.add_argument("--lstm-hidden", type=int, default=64)
-    parser.add_argument("--lstm-layers", type=int, default=1)
-    parser.add_argument("--dropout", type=float, default=0.1)
-    parser.add_argument("--quantiles", type=str, default="0.1,0.5,0.9")
-    parser.add_argument("--stride", type=int, default=1)
-    parser.add_argument("--seed", type=int, default=42)
-    args, unknown = parser.parse_known_args()
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Data
-    _, _, test_loader, static_dims, _, _, test_len = get_data_split(
-        args.dec_len, args.enc_len, args.batch_size, args.stride
-    )
-
-    # Load checkpoint first to read training-time config
-    checkpoint_path = os.path.join(
-        f"{ML_MODEL_CHECKPOINT}tft_best_train_final.pt"
+    assert os.path.exists(ML_MODEL_CHECKPOINT), (
+        f"Checkpoint not found: {ML_MODEL_CHECKPOINT}"
         )
-    assert os.path.exists(checkpoint_path), f"Checkpoint not \
-        found: {checkpoint_path}"
-    ckpt = torch.load(checkpoint_path, map_location=device)
+    ckpt = torch.load(ML_MODEL_CHECKPOINT, map_location=device)
 
-    # Use quantiles from checkpoint to match output head size
-    if "quantiles" in ckpt and isinstance(ckpt["quantiles"], (list, tuple)):
-        quantiles = [float(x) for x in ckpt["quantiles"]]
-    else:
-        quantiles = [float(x) for x in args.quantiles.split(",")]
-
-    # Read model hyperparameters from checkpoint cfg
     cfg = ckpt.get("cfg", {})
-    d_model = int(cfg.get("d_model", args.d_model))
-    hidden_dim = int(cfg.get("hidden_dim", args.hidden_dim))
-    n_heads = int(cfg.get("heads", args.heads))
-    lstm_hidden_size = int(cfg.get("lstm_hidden", args.lstm_hidden))
-    lstm_layers = int(cfg.get("lstm_layers", args.lstm_layers))
-    dropout = float(cfg.get("dropout", args.dropout))
+    quantiles = [float(quantile) for quantile in cfg["quantiles"].split(",")]
+    enc_len = cfg["enc_len"]
+    dec_len = cfg["dec_len"]
+    batch_size = cfg["batch_size"]
+    stride = cfg["stride"]
 
-    # Inputs
-    past_input_dims = [1] * len(ENC_VARS)
-    future_input_dims = [1] * len(DEC_VARS)
-    static_input_dims = static_dims
+    _, _, test_loader, static_dims, _, _, test_len = get_data_split(
+        dec_len, enc_len, batch_size, stride
+    )
 
     # Build model to match checkpoint shapes
     model = TemporalFusionTransformer(
-        static_input_dims=static_input_dims,
-        past_input_dims=past_input_dims,
-        future_input_dims=future_input_dims,
-        d_model=d_model,
-        hidden_dim=hidden_dim,
-        n_heads=n_heads,
-        lstm_hidden_size=lstm_hidden_size,
-        lstm_layers=lstm_layers,
-        dropout=dropout,
+        static_input_dims=static_dims,
+        past_input_dims=[1] * len(ENC_VARS),
+        future_input_dims=[1] * len(DEC_VARS),
+        d_model=cfg["d_model"],
+        hidden_dim=cfg["hidden_dim"],
+        n_heads=cfg["heads"],
+        lstm_hidden_size=cfg["lstm_hidden"],
+        lstm_layers=cfg["lstm_layers"],
+        dropout=cfg["dropout"],
         num_quantiles=len(quantiles),
     ).to(device)
 
     # Load weights strictly
     model.load_state_dict(ckpt["model_state"], strict=True)
-    print(f"Loaded stored TFT model for evaluation {checkpoint_path}")
-    print(f"Configured d_model={d_model}, hidden_dim={hidden_dim},\
-          heads={n_heads}, "
-          f"lstm_hidden_size={lstm_hidden_size}, lstm_layers={lstm_layers}, \
-            dropout={dropout}, "
-          f"num_quantiles={len(quantiles)}")
+    print(f"Loaded stored TFT model for evaluation {ML_MODEL_CHECKPOINT}")
 
     # Evaluate
     test_metrics = eval_loader(model, test_loader, quantiles, test_len)
