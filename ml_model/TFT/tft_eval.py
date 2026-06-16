@@ -10,7 +10,6 @@ from ml_model.TFT.architecture.tft import (
     )
 from ml_model.TFT.tft_dataset import TFTWindowDataset, tft_collate
 from ml_model.TFT.utils import build_onehot_maps
-from ml_model.TFT.utils import compute_metrics
 from config.settings import (
     ENC_VARS,
     DEC_VARS,
@@ -106,11 +105,10 @@ def eval_loader(model, data_loader, quantiles, test_len):
                         "family": family,
                         "y_past": float(past[i, d_idx, sales_idx].cpu()),
                     })
-
+    print(rows)
     save_results_csv(rows)
     total_loss /= max(test_len, 1)
     print(f"Test loss: {total_loss:.4f}")
-    return compute_metrics(test_ys, test_preds)
 
 
 def make_forecast(input_data):
@@ -152,5 +150,4 @@ def make_forecast(input_data):
     print(f"Loaded stored TFT model for evaluation {ML_MODEL_CHECKPOINT}")
 
     # Evaluate
-    test_metrics = eval_loader(model, test_loader, quantiles, test_len)
-    print(f"Test matrics: {test_metrics}")
+    eval_loader(model, test_loader, quantiles, test_len)
