@@ -33,11 +33,9 @@ def save_results_csv(rows):
 
 
 def wrap_data_into_loader(df, dec_len, enc_len, batch_size, stride):
-    panel_path = os.path.join("data", "panel.csv")
-    assert os.path.exists(panel_path), (
-        "Run data preprocessing first: python src/data/preprocess_favorita.py"
-    )
-
+    """
+    This function prepares Dataloader.
+    """
     scaler = StandardScaler()
     df.loc[:, REALS_TO_SCALE] = scaler.fit_transform(
         df.loc[:, REALS_TO_SCALE]
@@ -46,18 +44,16 @@ def wrap_data_into_loader(df, dec_len, enc_len, batch_size, stride):
     static_maps = build_onehot_maps(df, STATIC_COLS)
     static_dims = [len(static_maps[c]) for c in STATIC_COLS]
 
-    test_ds = TFTWindowDataset(
+    _ds = TFTWindowDataset(
         df, enc_len, dec_len, ENC_VARS, DEC_VARS, STATIC_COLS,
-        stride=stride,
-        static_onehot_maps=static_maps,
+        stride=stride, static_onehot_maps=static_maps,
     )
 
-    test_loader = DataLoader(
-        test_ds, batch_size=batch_size, shuffle=False,
-        num_workers=4, pin_memory=True, collate_fn=tft_collate,
+    _ds_loader = DataLoader(
+        _ds, batch_size=batch_size, shuffle=False,
+        num_workers=4, collate_fn=tft_collate,
     )
-    print(f"Test: {len(test_ds)}")
-    return (test_loader, static_dims, len(test_ds))
+    return (_ds_loader, static_dims, len(_ds))
 
 
 def eval_loader(model, data_loader, quantiles, test_len):
