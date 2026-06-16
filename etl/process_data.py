@@ -1,12 +1,13 @@
 import os
 import pandas as pd
-from config.settings import RAW, TFT_OUT_DIR
 
-os.makedirs(TFT_OUT_DIR, exist_ok=True)
+
+DATA_RAW_DIR = "data/"
+TFT_OUT_DIR = "data/"
 
 
 def load_csv(name, parse_dates=None):
-    path = os.path.join(RAW, name)
+    path = os.path.join(DATA_RAW_DIR, name)
     if not os.path.exists(path):
         return None
     return pd.read_csv(path, parse_dates=parse_dates)
@@ -34,7 +35,7 @@ def make_holidays(hol):
 
 def preprocess():
     train = load_csv("train.csv", parse_dates=["date"])
-    assert train is not None, "Missing train.csv in data/raw"
+    assert train is not None, "Missing train.csv in data/"
     stores = load_csv("stores.csv")
     oil = load_csv("oil.csv", parse_dates=["date"])
     trans = load_csv("transactions.csv", parse_dates=["date"])

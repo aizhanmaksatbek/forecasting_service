@@ -2,6 +2,8 @@ FUTURE_HORIZON = 28
 PAST_DAYS = 1
 
 DATA_FILE_PATH = "data/panel.csv"
+DATA_RAW_DIR = "data/"
+TFT_OUT_DIR = "data/"
 ML_MODEL_CHECKPOINT = "checkpoints/tft_best_train_final.pt"
 PREDICTION_RESULTS_DIR = "checkpoints/"
 
