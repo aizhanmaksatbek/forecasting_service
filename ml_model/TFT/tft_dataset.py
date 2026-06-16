@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Dict, Any
 import numpy as np
 import pandas as pd
 import torch
@@ -24,8 +24,6 @@ class TFTWindowDataset(Dataset):
         enc_vars: List[str],
         dec_vars: List[str],
         static_cols: List[str],
-        split_bounds: Tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp],
-        split: str = "train",
         stride: int = 1,
         store_col: str = "store_nbr",
         fam_col: str = "family",
@@ -45,15 +43,6 @@ class TFTWindowDataset(Dataset):
         self.target_col = target_col
         self.stride = stride
         self.static_onehot_maps = static_onehot_maps or {}
-
-        train_end, val_end, test_end = split_bounds
-        assert split in ["train", "val", "test"]
-        self.split = split
-        self.train_end, self.val_end, self.test_end = (
-            train_end,
-            val_end,
-            test_end,
-        )
 
         # group arrays
         self.df[self.date_col] = pd.to_datetime(self.df[self.date_col])
@@ -76,21 +65,7 @@ class TFTWindowDataset(Dataset):
             # sliding anchors
             # anchor t is last encoder index (inclusive)
             for t in range(enc_len - 1, n - dec_len - 1, self.stride):
-                dec_end_date = g.loc[t + dec_len, self.date_col]
-                if split == "train" and dec_end_date <= train_end:
-                    self.index.append((gi, t))
-                elif (
-                    split == "val"
-                    and (dec_end_date > train_end)
-                    and (dec_end_date <= val_end)
-                ):
-                    self.index.append((gi, t))
-                elif (
-                    split == "test"
-                    and (dec_end_date > val_end)
-                    and (dec_end_date <= test_end)
-                ):
-                    self.index.append((gi, t))
+                self.index.append((gi, t))
 
     def _make_static_vector(self, row: pd.Series) -> np.ndarray:
         parts = []

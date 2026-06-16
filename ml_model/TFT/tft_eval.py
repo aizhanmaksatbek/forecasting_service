@@ -4,10 +4,13 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
-from ml_model.TFT.architecture.tft import TemporalFusionTransformer, QuantileLoss
+from ml_model.TFT.architecture.tft import (
+    TemporalFusionTransformer,
+    QuantileLoss
+    )
 from ml_model.TFT.tft_dataset import TFTWindowDataset, tft_collate
 from ml_model.TFT.utils import build_onehot_maps
-from ml_model.TFT.utils import compute_metrics, get_date_splits
+from ml_model.TFT.utils import compute_metrics
 from config.settings import (
     ENC_VARS,
     DEC_VARS,
@@ -29,32 +32,23 @@ def save_results_csv(rows):
         print(f"Saved test forecasts CSV -> {out_csv}")
 
 
-def get_data_split(dec_len, enc_len, batch_size, stride):
+def wrap_data_into_loader(df, dec_len, enc_len, batch_size, stride):
     panel_path = os.path.join("data", "panel.csv")
     assert os.path.exists(panel_path), (
         "Run data preprocessing first: python src/data/preprocess_favorita.py"
     )
-    df = pd.read_csv(panel_path, parse_dates=["date"])
-
-    train_end, val_end, test_end = get_date_splits(df, dec_len)
 
     scaler = StandardScaler()
-    train_mask = df["date"] <= train_end
-    df.loc[train_mask, REALS_TO_SCALE] = scaler.fit_transform(
-        df.loc[train_mask, REALS_TO_SCALE]
-    )
-    df.loc[~train_mask, REALS_TO_SCALE] = scaler.transform(
-        df.loc[~train_mask, REALS_TO_SCALE]
+    df.loc[:, REALS_TO_SCALE] = scaler.fit_transform(
+        df.loc[:, REALS_TO_SCALE]
     )
 
     static_maps = build_onehot_maps(df, STATIC_COLS)
     static_dims = [len(static_maps[c]) for c in STATIC_COLS]
 
-    split_bounds = (train_end, val_end, test_end)
-
     test_ds = TFTWindowDataset(
         df, enc_len, dec_len, ENC_VARS, DEC_VARS, STATIC_COLS,
-        split_bounds, split="test", stride=stride,
+        stride=stride,
         static_onehot_maps=static_maps,
     )
 
@@ -63,7 +57,7 @@ def get_data_split(dec_len, enc_len, batch_size, stride):
         num_workers=4, pin_memory=True, collate_fn=tft_collate,
     )
     print(f"Test: {len(test_ds)}")
-    return (None, None, test_loader, static_dims, 0, 0, len(test_ds))
+    return (test_loader, static_dims, len(test_ds))
 
 
 def eval_loader(model, data_loader, quantiles, test_len):
@@ -138,7 +132,8 @@ def make_forecast(input_data):
     batch_size = cfg["batch_size"]
     stride = cfg["stride"]
 
-    _, _, test_loader, static_dims, _, _, test_len = get_data_split(
+    test_loader, static_dims, test_len = wrap_data_into_loader(
+        input_data,
         dec_len, enc_len, batch_size, stride
     )
 
