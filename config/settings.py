@@ -1,5 +1,5 @@
 FUTURE_HORIZON = 28
-PAST_DAYS = 56  # 56
+PAST_DAYS = 56
 DATA_TEST = "data/test_56_days.csv"
 
 DATA_FILE_PATH = "data/test_56_days.csv"

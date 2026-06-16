@@ -52,7 +52,7 @@ def wrap_data_into_loader(df, dec_len, enc_len, batch_size, stride):
         _ds, batch_size=batch_size, shuffle=False,
         num_workers=4, collate_fn=tft_collate,
     )
-    return (_ds_loader, static_dims, len(_ds))
+    return (_ds_loader, static_dims, len(_ds_loader))
 
 
 def eval_loader(model, data_loader, quantiles, test_len):
