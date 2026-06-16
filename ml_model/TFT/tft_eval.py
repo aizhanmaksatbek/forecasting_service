@@ -4,10 +4,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
-from ml_model.TFT.architecture.tft import (
-    TemporalFusionTransformer,
-    QuantileLoss
-    )
+from ml_model.TFT.architecture.tft import TemporalFusionTransformer
 from ml_model.TFT.tft_dataset import TFTWindowDataset, tft_collate
 from ml_model.TFT.utils import build_onehot_maps
 from config.settings import (
@@ -59,27 +56,20 @@ def eval_loader(model, data_loader, quantiles, test_len):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     median_idx = int(np.argmin([abs(q - 0.5) for q in quantiles]))
 
-    # Important: do NOT load a checkpoint here; model is already loaded
     model.eval()
-    criterion = QuantileLoss(quantiles=quantiles)
     rows = []
-    total_loss = 0.0
-    test_ys, test_preds = [], []
+    test_preds = []
 
     with torch.no_grad():
         for batch in data_loader:
             past = batch["past_inputs"].to(device)
             future = batch["future_inputs"].to(device)
             static = batch["static_inputs"].to(device)
-            y = batch["target"].to(device)
 
             out = model(past, future, static)
             preds_med = out["prediction"][..., median_idx]  # [B, L_dec]
             preds = preds_med.cpu().numpy()
-            loss = criterion(out["prediction"].to(device), y)
-            total_loss += loss.item() * past.size(0)
             yhat = out["prediction"][..., median_idx]
-            test_ys.append(y.detach().cpu().numpy())
             test_preds.append(yhat.detach().cpu().numpy())
 
             metas = batch.get("meta", [])
@@ -87,28 +77,14 @@ def eval_loader(model, data_loader, quantiles, test_len):
                 store_nbr = meta["store_nbr"]
                 family = meta["family"]
                 fut_dates = meta["future_dates"]
-                targets = batch["target"].cpu().numpy()   # [B, L_dec]
                 for d_idx, date in enumerate(fut_dates):
                     rows.append({
                         "date": pd.to_datetime(date),
                         "store_nbr": store_nbr,
                         "family": family,
-                        "y_true": float(targets[i, d_idx]),
                         "y_pred": float(preds[i, d_idx]),
                     })
-                sales_idx = ENC_VARS.index("sales")
-                past_dates = meta["past_dates"]
-                for d_idx, date in enumerate(past_dates):
-                    rows.append({
-                        "date": pd.to_datetime(date),
-                        "store_nbr": store_nbr,
-                        "family": family,
-                        "y_past": float(past[i, d_idx, sales_idx].cpu()),
-                    })
-    print(rows)
     save_results_csv(rows)
-    total_loss /= max(test_len, 1)
-    print(f"Test loss: {total_loss:.4f}")
 
 
 def make_forecast(input_data):

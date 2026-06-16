@@ -28,7 +28,7 @@ def load_csv(name, parse_dates=None):
 df = load_csv("panel.csv")
 end_date = df["date"].max()
 last_dec_strt = end_date - dt.timedelta(days=PAST_DAYS)
-test_ds = df[df["date"] >= last_dec_strt]
+test_ds = df[df["date"] > last_dec_strt]
 
 # Create the prediction dates
 frc_strt_date = last_dec_strt
