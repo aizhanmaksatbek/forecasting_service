@@ -1,12 +1,13 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from config.settings import TFT_CHECKPOINTS_DIR
+
+PREDICTION_RESULTS_DIR = "checkpoints/"
 
 
 def load_forecasts(path: str = None) -> pd.DataFrame:
     if path is None:
-        path = os.path.join(TFT_CHECKPOINTS_DIR, "tft_test_forecasts.csv")
+        path = os.path.join(PREDICTION_RESULTS_DIR, "forecast_results.csv")
     if not os.path.exists(path):
         raise FileNotFoundError(
             f"Forecasts CSV not found: {path}. Run train_tft.py first."
@@ -92,7 +93,7 @@ def plot_store_family(
     plt.tight_layout()
 
     if save_dir is None:
-        save_dir = TFT_CHECKPOINTS_DIR
+        save_dir = PREDICTION_RESULTS_DIR
     os.makedirs(save_dir, exist_ok=True)
     out = os.path.join(save_dir, f"plot_store_{store_nbr}_family_{family}.png")
     plt.savefig(out, dpi=150)
@@ -200,7 +201,7 @@ def plot_family_aggregate(df: pd.DataFrame, family: str, save_dir: str = None):
     plt.tight_layout()
 
     if save_dir is None:
-        save_dir = TFT_CHECKPOINTS_DIR
+        save_dir = PREDICTION_RESULTS_DIR
     os.makedirs(save_dir, exist_ok=True)
     out = os.path.join(save_dir, f"plot_family_{family}_aggregate.png")
     plt.savefig(out, dpi=150)
@@ -303,7 +304,7 @@ def plot_family_all_stores(
     fig.tight_layout(rect=[0, 0, 1, 0.95])
 
     if save_dir is None:
-        save_dir = TFT_CHECKPOINTS_DIR
+        save_dir = PREDICTION_RESULTS_DIR
     os.makedirs(save_dir, exist_ok=True)
     out = os.path.join(save_dir, f"plot_family_{family}_all_stores.png")
     fig.savefig(out, dpi=720)

@@ -149,6 +149,7 @@ activemq-data/
 
 # Dataset files
 data/
+*.png
 
 # SageMath parsed files
 *.sage.py
