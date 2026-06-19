@@ -6,7 +6,7 @@ DATA_FILE_PATH = "data/test_56_days.csv"
 DATA_RAW_DIR = "data/"
 TFT_OUT_DIR = "data/"
 ML_MODEL_CHECKPOINT = "checkpoints/tft_best_train_final.pt"
-PREDICTION_RESULTS_DIR = "checkpoints/"
+RESULTS_DIR = "checkpoints/"
 
 ENC_VARS = [
     "sales",

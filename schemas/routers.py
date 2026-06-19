@@ -14,5 +14,6 @@ async def submit_prediction(
     input_data: Annotated[pd.DataFrame, Depends(get_input_data)],
     background_task: BackgroundTasks
 ):
-    background_task.add_task(Predictor().predict, input_data)
+    predictor = Predictor(input_data)
+    background_task.add_task(predictor.predict)
     return {"message": "Started forecasting"}
