@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import numpy as np
 import datetime as dt
+import logging
 import torch
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
@@ -16,6 +17,7 @@ from config.settings import (
     RESULTS_DIR,
     ML_MODEL_CHECKPOINT
     )
+logging.basicConfig(level=logging.INFO)
 
 
 class Predictor():
@@ -58,7 +60,7 @@ class Predictor():
 
         # Load weights strictly
         self.model.load_state_dict(ckpt["model_state"], strict=True)
-        print(f"Loaded stored TFT model for evaluation {ML_MODEL_CHECKPOINT}")
+        logging.info(f"Loaded ML model {ML_MODEL_CHECKPOINT}")
 
     def predict(self):
         median_idx = int(np.argmin([abs(q - 0.5) for q in self.quantiles]))
@@ -99,7 +101,7 @@ class Predictor():
             .sort_values(["family", "store_nbr", "date"])
         )
         forecasts_df.to_csv(self.out_csv, index=False)
-        print(f"Saved test forecasts CSV -> {self.out_csv}")
+        logging.info(f"Saved results -> {self.out_csv}")
 
     def wrap_data_into_loader(self):
         """
