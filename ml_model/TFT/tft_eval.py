@@ -49,10 +49,10 @@ def wrap_data_into_loader(df, dec_len, enc_len, batch_size, stride):
         _ds, batch_size=batch_size, shuffle=False,
         num_workers=4, collate_fn=tft_collate,
     )
-    return (_ds_loader, static_dims, len(_ds_loader))
+    return (_ds_loader, static_dims)
 
 
-def eval_loader(model, data_loader, quantiles, test_len):
+def eval_loader(model, data_loader, quantiles):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     median_idx = int(np.argmin([abs(q - 0.5) for q in quantiles]))
 
@@ -102,7 +102,7 @@ def make_forecast(input_data):
     batch_size = cfg["batch_size"]
     stride = cfg["stride"]
 
-    test_loader, static_dims, test_len = wrap_data_into_loader(
+    test_loader, static_dims = wrap_data_into_loader(
         input_data,
         dec_len, enc_len, batch_size, stride
     )
@@ -126,4 +126,4 @@ def make_forecast(input_data):
     print(f"Loaded stored TFT model for evaluation {ML_MODEL_CHECKPOINT}")
 
     # Evaluate
-    eval_loader(model, test_loader, quantiles, test_len)
+    eval_loader(model, test_loader, quantiles)
