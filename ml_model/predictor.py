@@ -4,6 +4,7 @@ import numpy as np
 import datetime as dt
 import logging
 import torch
+import asyncio
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
 from ml_model.tft import TemporalFusionTransformer
@@ -62,15 +63,14 @@ class Predictor():
         self.model.load_state_dict(ckpt["model_state"], strict=True)
         logging.info(f"Loaded ML model {ML_MODEL_CHECKPOINT}")
 
-    def predict(self):
+    async def predict(self):
         median_idx = int(np.argmin([abs(q - 0.5) for q in self.quantiles]))
-
         self.model.eval()
         rows = []
-        test_preds = []
 
-        with torch.no_grad():
-            for batch in self.data_loader:
+        def batch_predict(batch):
+            result = []
+            with torch.no_grad():
                 past = batch["past_inputs"].to(self.device)
                 future = batch["future_inputs"].to(self.device)
                 static = batch["static_inputs"].to(self.device)
@@ -78,8 +78,6 @@ class Predictor():
                 out = self.model(past, future, static)
                 preds_med = out["prediction"][..., median_idx]  # [B, L_dec]
                 preds = preds_med.cpu().numpy()
-                yhat = out["prediction"][..., median_idx]
-                test_preds.append(yhat.detach().cpu().numpy())
 
                 metas = batch.get("meta", [])
                 for i, meta in enumerate(metas):
@@ -87,15 +85,24 @@ class Predictor():
                     family = meta["family"]
                     fut_dates = meta["future_dates"]
                     for d_idx, date in enumerate(fut_dates):
-                        rows.append({
+                        result.append({
                             "date": pd.to_datetime(date),
                             "store_nbr": store_nbr,
                             "family": family,
                             "y_pred": float(preds[i, d_idx]),
                         })
+            return result
+
+        rows = await asyncio.gather(*[
+            asyncio.to_thread(batch_predict, batch)
+            for batch in self.data_loader
+        ])
         self.save_results_csv(rows)
 
     def save_results_csv(self, rows):
+        import itertools
+
+        rows = list(itertools.chain.from_iterable(rows))
         forecasts_df = (
             pd.DataFrame(rows)
             .sort_values(["family", "store_nbr", "date"])

@@ -1,10 +1,9 @@
 FUTURE_HORIZON = 28
 PAST_DAYS = 56
-DATA_TEST = "data/test_56_days.csv"
 
-DATA_FILE_PATH = "data/test_56_days.csv"
-DATA_RAW_DIR = "data/"
-TFT_OUT_DIR = "data/"
+DATA_FILE_PATH = "database/test_56_days.csv"
+DATA_RAW_DIR = "database/"
+TFT_OUT_DIR = "database/"
 ML_MODEL_CHECKPOINT = "checkpoints/tft_best_train_final.pt"
 RESULTS_DIR = "checkpoints/"
 
