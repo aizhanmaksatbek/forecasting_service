@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from ml_model.data_prep import get_input_data
+from ml_model.load_data import get_input_data
 from ml_model.predictor import Predictor
 from typing import Annotated
 import pandas as pd
