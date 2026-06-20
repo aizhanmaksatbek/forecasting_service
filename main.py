@@ -3,7 +3,7 @@ from schemas.routers import router
 import uvicorn
 
 
-app = FastAPI()
+app = FastAPI(description="API for Demand Forecasting")
 app.include_router(router)
 
 
