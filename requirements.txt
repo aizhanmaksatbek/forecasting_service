@@ -2,3 +2,6 @@ fastapi[standard]
 torch
 numpy
 pandas
+
+# ETL
+apache-airflow
