@@ -19,6 +19,7 @@ from config.settings import (
     ML_MODEL_CHECKPOINT
     )
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("predictor")
 
 
 class Predictor():
@@ -61,7 +62,7 @@ class Predictor():
 
         # Load weights strictly
         self.model.load_state_dict(ckpt["model_state"], strict=True)
-        logging.info(f"Loaded ML model {ML_MODEL_CHECKPOINT}")
+        logger.info(f"Loaded ML model {ML_MODEL_CHECKPOINT}")
 
     async def predict(self):
         median_idx = int(np.argmin([abs(q - 0.5) for q in self.quantiles]))
@@ -108,7 +109,7 @@ class Predictor():
             .sort_values(["family", "store_nbr", "date"])
         )
         forecasts_df.to_csv(self.out_csv, index=False)
-        logging.info(f"Saved results -> {self.out_csv}")
+        logger.info(f"Saved results -> {self.out_csv}")
 
     def wrap_data_into_loader(self):
         """
